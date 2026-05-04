@@ -29,23 +29,42 @@ function EduCard({ edu, onUpdate, onDelete }) {
               <label>Institution *</label>
               <input value={edu.institution} onChange={e => set('institution', e.target.value)} placeholder="MIT World Peace University" />
             </div>
-            <div className="form-field">
-              <label>Degree *</label>
-              <select value={edu.degree} onChange={e => set('degree', e.target.value)}>
-                <option value="">Select degree</option>
-                <option>Bachelor of Technology</option>
-                <option>Bachelor of Engineering</option>
-                <option>Bachelor of Science</option>
-                <option>Bachelor of Computer Applications</option>
-                <option>Master of Computer Applications</option>
-                <option>Master of Technology</option>
-                <option>Master of Science</option>
-                <option>MBA</option>
-                <option>PhD</option>
-                <option>Diploma</option>
-                <option>Other</option>
-              </select>
-            </div>
+           <div className="form-field">
+  <label>Degree *</label>
+  <select value={edu.degree.startsWith('Other:') ? 'Other' : edu.degree} onChange={e => {
+    if (e.target.value === 'Other') set('degree', 'Other:');
+    else set('degree', e.target.value);
+  }}>
+    <option value="">Select degree</option>
+    <option>SSC (10th)</option>
+    <option>HSC (12th)</option>
+    <option>Diploma</option>
+    <option>Bachelor of Technology (B.Tech)</option>
+    <option>Bachelor of Engineering (B.E)</option>
+    <option>Bachelor of Science (B.Sc)</option>
+    <option>Bachelor of Computer Applications (BCA)</option>
+    <option>Bachelor of Commerce (B.Com)</option>
+    <option>Bachelor of Arts (B.A)</option>
+    <option>Bachelor of Business Administration (BBA)</option>
+    <option>Bachelor of Pharmacy (B.Pharm)</option>
+    <option>Master of Computer Applications (MCA)</option>
+    <option>Master of Technology (M.Tech)</option>
+    <option>Master of Science (M.Sc)</option>
+    <option>Master of Commerce (M.Com)</option>
+    <option>Master of Business Administration (MBA)</option>
+    <option>Master of Pharmacy (M.Pharm)</option>
+    <option>PhD</option>
+    <option>Other</option>
+  </select>
+  {edu.degree.startsWith('Other:') && (
+    <input
+      style={{ marginTop: 8 }}
+      value={edu.degree.replace('Other:', '')}
+      onChange={e => set('degree', 'Other:' + e.target.value)}
+      placeholder="Type your degree e.g. B.Pharm, LLB..."
+    />
+  )}
+</div>
             <div className="form-field">
               <label>Field of Study</label>
               <input value={edu.field} onChange={e => set('field', e.target.value)} placeholder="Computer Science" />
