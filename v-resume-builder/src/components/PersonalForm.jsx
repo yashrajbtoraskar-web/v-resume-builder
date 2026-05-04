@@ -16,7 +16,7 @@ export default function PersonalForm({ data, onChange }) {
       <div className="form-grid form-grid-2">
         <div className="form-field">
           <label>Full Name *</label>
-          <input value={data.fullName} onChange={e => set('fullName', e.target.value)} placeholder="e.g. Yashraj Sharma" />
+          <input value={data.fullName} onChange={e => set('fullName', e.target.value)} placeholder="e.g. Vaishnavi Mane" />
         </div>
         <div className="form-field">
           <label>Professional Title *</label>
@@ -28,11 +28,11 @@ export default function PersonalForm({ data, onChange }) {
         </div>
         <div className="form-field">
           <label>Phone *</label>
-          <input value={data.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 98765 43210" />
+          <input value={data.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 7058459170" />
         </div>
         <div className="form-field">
           <label>Location</label>
-          <input value={data.location} onChange={e => set('location', e.target.value)} placeholder="Pune, Maharashtra, India" />
+          <input value={data.location} onChange={e => set('location', e.target.value)} placeholder="Palus, Maharashtra, India" />
         </div>
         <div className="form-field">
           <label>Website / Portfolio</label>
