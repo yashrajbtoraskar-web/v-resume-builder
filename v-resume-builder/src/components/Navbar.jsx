@@ -22,7 +22,7 @@ export default function Navbar({ resume, activeSection, setActiveSection, atsSco
   return (
     <nav className="navbar">
       <div className="nav-brand">
-        <span className="brand-v">V</span>
+        <span className="brand-v">Vyaish</span>
         <span className="brand-text">Resume</span>
         <span className="brand-dot" />
       </div>
