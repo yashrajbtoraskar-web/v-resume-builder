@@ -5,15 +5,31 @@ export async function exportToPDF(elementId, fileName = 'resume') {
   const element = document.getElementById(elementId);
   if (!element) return;
 
+  // Save original styles
+  const originalTransform = element.style.transform;
+  const originalWidth = element.style.width;
+
+  // Fix element for clean capture
+  element.style.transform = 'none';
+  element.style.width = '794px';
+
+  await new Promise(r => setTimeout(r, 300));
+
   const canvas = await html2canvas(element, {
-    scale: 3,
+    scale: 2,
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
     logging: false,
+    width: 794,
+    windowWidth: 794,
   });
 
-  const imgData = canvas.toDataURL('image/jpeg', 0.98);
+  // Restore styles
+  element.style.transform = originalTransform;
+  element.style.width = originalWidth;
+
+  const imgData = canvas.toDataURL('image/png', 1.0);
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -21,23 +37,20 @@ export async function exportToPDF(elementId, fileName = 'resume') {
   });
 
   const pdfW = pdf.internal.pageSize.getWidth();
-  const pdfH = (canvas.height * pdfW) / canvas.width;
+  const pdfH = pdf.internal.pageSize.getHeight();
+  const imgH = (canvas.height * pdfW) / canvas.width;
 
+  let heightLeft = imgH;
   let position = 0;
-  const pageHeight = pdf.internal.pageSize.getHeight();
 
-  if (pdfH <= pageHeight) {
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-  } else {
-    let heightLeft = pdfH;
-    pdf.addImage(imgData, 'JPEG', 0, position, pdfW, pdfH);
-    heightLeft -= pageHeight;
-    while (heightLeft >= 0) {
-      position = heightLeft - pdfH;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, pdfW, pdfH);
-      heightLeft -= pageHeight;
-    }
+  pdf.addImage(imgData, 'PNG', 0, position, pdfW, imgH);
+  heightLeft -= pdfH;
+
+  while (heightLeft > 0) {
+    position -= pdfH;
+    pdf.addPage();
+    pdf.addImage(imgData, 'PNG', 0, position, pdfW, imgH);
+    heightLeft -= pdfH;
   }
 
   pdf.save(`${fileName.replace(/\s+/g, '_')}_resume.pdf`);
