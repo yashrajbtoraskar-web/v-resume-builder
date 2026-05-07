@@ -5,28 +5,42 @@ export async function exportToPDF(elementId, fileName = 'resume') {
   const element = document.getElementById(elementId);
   if (!element) return;
 
-  // Store original styles
-  const originalTransform = element.style.transform;
-  const originalPosition = element.style.position;
-  const originalLeft = element.style.left;
-  const originalTop = element.style.top;
-  const originalZIndex = element.style.zIndex;
-  const originalWidth = element.style.width;
+  // Create a hidden clone for clean rendering
+  const clone = element.cloneNode(true);
+  clone.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: -9999px !important;
+    width: 794px !important;
+    transform: none !important;
+    zoom: 1 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: -9999 !important;
+    background: white !important;
+  `;
 
-  // Fix element for clean capture
-  element.style.transform = 'none';
-  element.style.position = 'fixed';
-  element.style.left = '-9999px';
-  element.style.top = '0px';
-  element.style.zIndex = '-1';
-  element.style.width = '794px';
+  // Override ALL fonts in clone to safe system fonts
+  const style = document.createElement('style');
+  style.textContent = `
+    * {
+      font-family: Arial, Helvetica, sans-serif !important;
+      -webkit-font-smoothing: antialiased !important;
+    }
+    .tmpl-name, .tmpl-classic-name, .tmpl-exec-name, h1, h2, h3 {
+      font-family: Georgia, 'Times New Roman', serif !important;
+    }
+  `;
+  clone.appendChild(style);
+  document.body.appendChild(clone);
 
-  // Wait for fonts and layout to settle
-  await document.fonts.ready;
-  await new Promise(resolve => setTimeout(resolve, 800));
+  // Wait for everything to render
+  await new Promise(resolve => setTimeout(resolve, 600));
 
   try {
-    const canvas = await html2canvas(element, {
+    const canvas = await html2canvas(clone, {
       scale: 2,
       useCORS: true,
       allowTaint: false,
@@ -34,20 +48,9 @@ export async function exportToPDF(elementId, fileName = 'resume') {
       logging: false,
       width: 794,
       windowWidth: 794,
-      onclone: (clonedDoc) => {
-        const clonedEl = clonedDoc.getElementById(elementId);
-        if (clonedEl) {
-          clonedEl.style.transform = 'none';
-          clonedEl.style.position = 'relative';
-          clonedEl.style.left = '0';
-          clonedEl.style.top = '0';
-          clonedEl.style.width = '794px';
-          clonedEl.style.margin = '0';
-          clonedEl.style.boxShadow = 'none';
-          clonedEl.style.borderRadius = '0';
-        }
-      }
     });
+
+    document.body.removeChild(clone);
 
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({
@@ -57,14 +60,13 @@ export async function exportToPDF(elementId, fileName = 'resume') {
       compress: true,
     });
 
-    const pdfW = 210; // A4 width in mm
-    const pdfH = 297; // A4 height in mm
+    const pdfW = 210;
+    const pdfH = 297;
     const imgH = (canvas.height * pdfW) / canvas.width;
 
     if (imgH <= pdfH) {
       pdf.addImage(imgData, 'PNG', 0, 0, pdfW, imgH);
     } else {
-      // Multi-page support
       let heightLeft = imgH;
       let position = 0;
       pdf.addImage(imgData, 'PNG', 0, position, pdfW, imgH);
@@ -78,13 +80,11 @@ export async function exportToPDF(elementId, fileName = 'resume') {
     }
 
     pdf.save(`${(fileName || 'resume').replace(/\s+/g, '_')}_resume.pdf`);
-  } finally {
-    // Always restore original styles
-    element.style.transform = originalTransform;
-    element.style.position = originalPosition;
-    element.style.left = originalLeft;
-    element.style.top = originalTop;
-    element.style.zIndex = originalZIndex;
-    element.style.width = originalWidth;
+
+  } catch (err) {
+    if (document.body.contains(clone)) {
+      document.body.removeChild(clone);
+    }
+    console.error('PDF export failed:', err);
   }
 }
